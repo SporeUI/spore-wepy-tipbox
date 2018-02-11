@@ -1,6 +1,9 @@
 <style lang="css">
 .swpy-tipbox-mask{
 	display: none;
+	flex-wrap: nowrap;
+	justify-content: center;
+	align-items: center;
 	position: fixed;
 	left:0;
 	top:0;
@@ -11,14 +14,11 @@
 }
 
 .swpy-tipbox-show{
-	display: block;
+	display: flex;
 }
 
 .swpy-tipbox{
-	position: absolute;
-	margin: 0 auto;
-	top: 50%;
-	left: 50%;
+	flex: 0 0 auto;
 	opacity: 0;
 	max-width: 20rem;
 	overflow: hidden;
@@ -30,15 +30,14 @@
 	color: #fff;
 	border-radius: 5px;
 	word-break: break-all;
-	transform: translateX(-50%) translateY(-50%);
 	animation: swpy-tipbox-fx 2s ease-in-out;
 }
 
 @keyframes swpy-tipbox-fx {
-	0% { opacity:0; transform:translateX(-50%) translateY(-50%) scale(1.5); }
-	10% { opacity:1; transform:translateX(-50%) translateY(-50%) scale(1); }
-	90% { opacity:1; transform:translateX(-50%) translateY(-50%) scale(1); }
-	100% { opacity:0; transform:translateX(-50%) translateY(-50%) scale(1); }
+	0% { opacity:0; transform:scale(1.5); }
+	10% { opacity:1; transform:scale(1); }
+	90% { opacity:1; transform:scale(1); }
+	100% { opacity:0; transform:scale(1); }
 }
 </style>
 
@@ -63,13 +62,15 @@ export default class TipBox extends wepy.component {
 	computed = {
 		cssText() {
 			let styles = {};
+			styles['align-self'] = 'initial';
+			styles['margin-top'] = 'initial';
+			styles['margin-bottom'] = 'initial';
 			if (this.position === 'top') {
-				styles.position = this.position;
-				styles.top = this.margin || '';
+				styles['align-self'] = 'flex-start';
+				styles['margin-top'] = this.margin || '';
 			} else if (this.position === 'bottom') {
-				styles.position = this.position;
-				styles.top = 'initial';
-				styles.bottom = this.margin || '';
+				styles['align-self'] = 'flex-end'
+				styles['margin-bottom'] = this.margin || '';
 			}
 			let css = Object.keys(styles).map(
 				key => (key + ':' + styles[key])
