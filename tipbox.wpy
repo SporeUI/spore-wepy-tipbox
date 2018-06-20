@@ -1,3 +1,82 @@
+<template>
+	<view class="swpy-tipbox-mask" :class="{'swpy-tipbox-show':!!visible}">
+		<view class="swpy-tipbox" style="{{cssText}}">{{text}}</view>
+	</view>
+</template>
+
+<script>
+import wepy from 'wepy';
+
+const defaults = {
+	position: 'center',
+	margin: '20px',
+	duration: 2000
+};
+
+export default class TipBox extends wepy.component {
+
+	data = {
+		visible: false,
+		text: '',
+		...defaults
+	};
+
+	computed = {
+		cssText() {
+			let styles = {};
+			styles['align-self'] = 'initial';
+			styles['margin-top'] = 'initial';
+			styles['margin-bottom'] = 'initial';
+			if (this.position === 'top') {
+				styles['align-self'] = 'flex-start';
+				styles['margin-top'] = this.margin || '';
+			} else if (this.position === 'bottom') {
+				styles['align-self'] = 'flex-end'
+				styles['margin-bottom'] = this.margin || '';
+			}
+			styles['animation-duration'] = this.duration + 'ms';
+			let css = Object.keys(styles).map(
+				key => (key + ':' + styles[key])
+			).join(';');
+			return css;
+		}
+	};
+
+	show(text, options) {
+		if (!text) { return; }
+
+		let conf = {
+			...defaults,
+			...options
+		};
+
+		this.hide();
+		Object.assign(this, conf);
+
+		// 时间延迟太短无法使动画重复触发
+		// 测试发现20ms正合适
+		setTimeout(() => {
+			this.visible = true;
+			this.text = text;
+			this.$apply();
+		}, 20);
+
+		if (this.timer) {
+			clearTimeout(this.timer);
+			this.timer = null;
+		}
+		this.timer = setTimeout(() => this.hide(), conf.duration);
+	}
+
+	hide() {
+		this.visible = false;
+		this.text = '';
+		Object.assign(this, defaults);
+		this.$apply();
+	}
+}
+</script>
+
 <style lang="css">
 .swpy-tipbox-mask{
 	display: none;
@@ -30,7 +109,9 @@
 	color: #fff;
 	border-radius: 5px;
 	word-break: break-all;
-	animation: swpy-tipbox-fx 2s ease-in-out;
+	animation-name: swpy-tipbox-fx;
+	animation-duration: 2000ms;
+	animation-timing-function: ease-in-out;
 }
 
 @keyframes swpy-tipbox-fx {
@@ -40,79 +121,3 @@
 	100% { opacity:0; transform:scale(1); }
 }
 </style>
-
-<template>
-	<view class="swpy-tipbox-mask" :class="{swpy-tipbox-show:!!visible}">
-		<view class="swpy-tipbox" style="{{cssText}}">{{tip}}</view>
-	</view>
-</template>
-
-<script>
-import wepy from 'wepy';
-
-export default class TipBox extends wepy.component {
-
-	data = {
-		visible: false,
-		position: '',
-		margin: '',
-		tip: ''
-	};
-
-	computed = {
-		cssText() {
-			let styles = {};
-			styles['align-self'] = 'initial';
-			styles['margin-top'] = 'initial';
-			styles['margin-bottom'] = 'initial';
-			if (this.position === 'top') {
-				styles['align-self'] = 'flex-start';
-				styles['margin-top'] = this.margin || '';
-			} else if (this.position === 'bottom') {
-				styles['align-self'] = 'flex-end'
-				styles['margin-bottom'] = this.margin || '';
-			}
-			let css = Object.keys(styles).map(
-				key => (key + ':' + styles[key])
-			).join(';');
-			return css;
-		}
-	};
-
-	show(text, options) {
-		if (!text) {
-			return;
-		}
-
-		let conf = Object.assign({
-			position: '',
-			margin: '20px'
-		}, options);
-
-		this.hide();
-
-		this.position = conf.position;
-		this.margin = conf.margin;
-
-		setTimeout(() => {
-			this.visible = true;
-			this.tip = text;
-			this.$apply();
-		}, 20);
-
-		if (this.timer) {
-			clearTimeout(this.timer);
-			this.timer = null;
-		}
-		this.timer = setTimeout(() => this.hide(), 2000);
-	}
-
-	hide() {
-		this.visible = false;
-		this.tip = '';
-		this.position = '';
-		this.margin = '';
-		this.$apply();
-	}
-}
-</script>
